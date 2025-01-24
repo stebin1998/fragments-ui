@@ -10,12 +10,27 @@ const config = {
 
 const userManager = new UserManager(config);
 
+// Redirect the user to Cognito for login
 export async function signIn() {
-  await userManager.signinRedirect();
+  try {
+    await userManager.signinRedirect();
+  } catch (err) {
+    console.error('Login failed:', err);
+  }
 }
 
-export async function getUser() {
-  const user = await userManager.getUser();
-  return user ? { username: user.profile.email } : null;
+// Handle the redirect from Cognito after login
+export async function handleRedirectCallback() {
+  try {
+    const user = await userManager.signinRedirectCallback();
+    console.log('Logged in user:', user);
+    sessionStorage.setItem('accessToken', user.access_token); // Save token
+  } catch (err) {
+    console.error('Error handling redirect callback:', err);
+  }
 }
 
+// Retrieve the access token
+export async function getAccessToken() {
+  return sessionStorage.getItem('accessToken');
+}
